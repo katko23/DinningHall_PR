@@ -1,21 +1,27 @@
 # Python 3 server example
-import socket
+import socket,Setings
+from threading import Thread
 
-hostName = "127.12.12.128"
-serverPort = 27004
+hostName = Setings.serverName
+serverPort = Setings.this_serverPort
 
+class Server(Thread):
+    def __init__(self):
+        Thread.__init__(self)
 
-sock = socket.socket() #socket creation
-sock.bind((hostName,serverPort)) # socket binding on LAN
-sock.listen(4096) #server a listen
+    def run(self):
+        sock = socket.socket()  # socket creation
+        sock.bind((hostName, serverPort))  # socket binding on LAN
+        sock.listen(4096)  # server a listen
 
-print('socket is listening')
+        print('socket is listening')
 
-while True:
-    c, addr = sock.accept()
-    print('got connection from ', addr)
+        while True:
+            c, addr = sock.accept()
+            print('got connection from ', addr)
 
-    jsonReceived = c.recv(1024)
-    print("Json received -->", jsonReceived)
+            jsonReceived = c.recv(1024)
+            print("Json received -->", jsonReceived)
 
-    c.close()
+            c.close()
+
