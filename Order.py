@@ -11,26 +11,28 @@ class Order(Thread):
 
     id = 1
     orders = []
-    queueLock = threading.Lock()
-    workQueue = queue.Queue(10)
-    queueLock.acquire()
-    for order_nr in orders:
-        workQueue.put(order_nr)
-    queueLock.release()
+
 
     def run(self):
         table = [Tables.TableClass() for i in range(Setings.nr_of_tables)]
-        for i in range(Setings.nr_of_tables):
-            if(table[i].ocupped == False):
-                table[i].orderGenerator()
-                order = Order_API()
-                order.items = table[i].items
-                order.table_id = i
-                order.order_id = self.id
-                order.priority = table[i].priority
-                self.orders.append(order)
-            #print(table[i].items)
-            self.id = self.id + 1
+        while True:
+            for i in range(Setings.nr_of_tables):
+                if (table[i].ocupped == False):
+                    table[i].orderGenerator()
+                    order = Order_API()
+                    order.items = table[i].items
+                    order.table_id = i
+                    order.order_id = self.id
+                    order.priority = table[i].priority
+                    queueLock = threading.Lock()  # create a mutex
+                    queueLock.acquire()  # stop others thread
+                    self.orders.append(order)
+                    queueLock.release()  # start others thread
+                #else:
+                    #print("_______________________________________________________________ Aici sunt toatee mesele pline")
+
+                # print(table[i].items)
+                self.id = self.id + 1
 
 class Order_API:
     def __init__(self):
@@ -39,3 +41,11 @@ class Order_API:
         self.items = []
         self.priority = 0
 
+    def order_writer(self,orders):
+        queueLock = threading.Lock()  # create a mutex
+        workQueue = queue.Queue(10)
+        queueLock.acquire()  # stop others thread
+        for order_nr in orders:
+            workQueue.put(order_nr)
+        queueLock.release()  #start others thread
+        return orders
