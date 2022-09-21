@@ -1,7 +1,5 @@
 # Python 3 server example
-import threading
-
-import SocketServer,WaiterSocket,Order,Setings,Waiter_Walk
+import SocketServer,Tables_List,Order,Waiter_Walk
 from threading import Thread
 
 if __name__ == "__main__":
@@ -9,11 +7,14 @@ if __name__ == "__main__":
     server.start()
 
     orders_D = Order.Order()
-    orders_D.start()
 
-    waiters = [WaiterSocket.Waiter(i) for i in range(Setings.nr_of_waiters)]
-    for i in range(Setings.nr_of_waiters):
-        waiters[i].start()
+    thread_tables = Thread(target=Tables_List.tables_init())
+    # thread_tables.start()
+    # Tables_List.table_init()
+
+    thread_waiters = Thread(target=Waiter_Walk.waiters_walking_func())
+
+    thread_waiters.start()
 
 
 
