@@ -16,6 +16,7 @@ class TableClass(Thread):
         self.id = id
 
     ocupped = [False for i in range(Setings.nr_of_tables)]
+    tclock = threading.Lock()
 
     # def serve_oc(self):
     #     ocupatLock = threading.Lock()  # create a mutex
@@ -56,8 +57,9 @@ class TableClass(Thread):
         for i in range(self.nr_of_items):
             foodid = random.randint(1,13)
             self.items.append(foodid)
-
+        self.tclock.acquire()
         self.ocupped[self.id - 1] = True
+        self.tclock.release()
         #print("items" + str(self.items))
 
     def max_waiting(self,items):
@@ -75,6 +77,7 @@ class TableClass(Thread):
         if (12 < (time / nr_items) and (time / nr_items) <= 46): return 1;
 
 
-
+    def deocupped(self):
+        self.ocupped[self.id - 1] = False
 
 

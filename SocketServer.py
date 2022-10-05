@@ -1,9 +1,10 @@
 # Python 3 server example
+import json
 import socket,Setings
 import threading
 from threading import Thread
 from flask import Flask, render_template, request, url_for, jsonify
-import Waiter_Walk
+
 
 hostName = Setings.serverName
 serverPort = Setings.this_serverPort
@@ -17,11 +18,13 @@ class Server(Thread):
 
         @app.route('/distribution', methods=['POST'])
         def my_test_endpoint():
+            from Waiter_Walk import waiters
             input_json = request.get_json(force=True)
             # force=True, above, is necessary if another developer
             # forgot to set the MIME type to 'application/json'
             print('data from client:', input_json)
-            Waiter_Walk.waiters[int(input_json['waiter_id']) - 1].orders_done.append(input_json)
+            temp = json.loads(input_json)
+            waiters[int(temp['waiter_id']) - 1].orders_done.append(temp)
             dictToReturn = {'answer': "Dinning Hall received"}
             return jsonify(dictToReturn)
 

@@ -12,6 +12,7 @@ class Order:
     id = 1
     orders = []
     orders_done = []
+    orders_lock = threading.Lock()
 
 
 #    def run(self):

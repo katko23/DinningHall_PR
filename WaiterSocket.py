@@ -20,8 +20,10 @@ class Waiter(Thread):
 
     def run(self):
         while True:
+            import Order
             queueLock = threading.Lock()  # create a mutex
             queueLock.acquire()  # stop others thread
+            Order.Order.orders_lock.acquire()
             if(len(O_Class.Order.orders) > 0):
                 waiter_take_order = random.randint(2, 4)
                 time.sleep(waiter_take_order * Setings.timeunit)
@@ -29,6 +31,7 @@ class Waiter(Thread):
                 self.setbody(waiter_order_list.order_id, waiter_order_list.table_id, self.id_waiter,
                              waiter_order_list.items, waiter_order_list.priority, waiter_order_list.max_wait)
                 self.send()
+            Order.Order.orders_lock.release()
             queueLock.release()  # resume other threads
             self.serve()
 
@@ -89,15 +92,19 @@ Connection: close\r
         # print(s.recv(1024))
 
     def serve(self):
+        import Tables
         if(len(self.orders_done)>0):
             serveLock = threading.Lock()  # create a mutex
             serveLock.acquire()
             serving = self.orders_done.pop(0)
+            print("\n\n",serving,"\n\n")
             #Tables_List.tables[serving['table_id'] - 1].ocupped = False
             #temp = Tables_List.tables[serving['table_id'] - 1]
             #temp.ocupped = False
-            Tables_List.tables[serving['table_id'] - 1].ocupped[serving['table_id'] - 1] = False
+            Tables.TableClass.tclock.acquire()
+            Tables_List.tables[serving['table_id'] - 1].deocupped()
             print(Tables_List.tables[serving['table_id'] - 1].ocupped)
+            Tables.TableClass.tclock.release()
             print("order with id ", serving['order_id'], " was served by waiter nr ", serving['waiter_id'])
             serveLock.release() #release mutex
 
