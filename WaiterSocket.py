@@ -7,8 +7,7 @@ import Order as O_Class
 from threading import Thread
 import threading
 import requests
-
-from Lab1.DinningHall import Tables_List
+import Tables_List
 
 class Waiter(Thread):
     def __init__(self,id):

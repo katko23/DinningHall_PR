@@ -7,7 +7,7 @@
 # this_serverPort = 27004
 
 
-hostName = "l"
+hostName = ""
 serverPort = 27003
 
 serverName =  ""
