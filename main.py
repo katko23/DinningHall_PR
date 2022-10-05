@@ -1,8 +1,24 @@
 # Python 3 server example
-import SocketServer,WaiterSocket
+import SocketServer,Tables_List,Order,Waiter_Walk
+from threading import Thread
 
 if __name__ == "__main__":
-    SocketServer
+    server = SocketServer.Server()
+    server.start()
 
-    WaiterSocket
+    orders_D = Order.Order()
+
+    thread_tables = Thread(target=Tables_List.tables_init())
+    # thread_tables.start()
+    # Tables_List.table_init()
+
+    thread_waiters = Thread(target=Waiter_Walk.waiters_walking_func())
+
+    thread_waiters.start()
+
+
+
+
+
+
 
