@@ -1,5 +1,5 @@
 from threading import Thread
-from Lab1.DinningHall import Tables, Setings
+import Tables, Setings
 
 
 tables = [Tables.TableClass(i) for i in range(Setings.nr_of_tables)]

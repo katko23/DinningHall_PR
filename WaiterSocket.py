@@ -7,8 +7,7 @@ import Order as O_Class
 from threading import Thread
 import threading
 import requests
-
-from Lab1.DinningHall import Tables_List
+import Tables_List
 
 class Waiter(Thread):
     def __init__(self,id):
@@ -38,6 +37,7 @@ class Waiter(Thread):
     orders_done = []
     host = Setings.hostName
     port = Setings.serverPort
+    average_rating = 5
     headers = """\
 POST /order HTTP/1.1\r
 Content-Type: {content_type}\r
@@ -107,5 +107,15 @@ Connection: close\r
             Tables.TableClass.tclock.release()
             print("order with id ", serving['order_id'], " was served by waiter nr ", serving['waiter_id'])
             serveLock.release() #release mutex
+            temptime = serving['cooking_time'] / serving['max_wait']
+            rating = 0
+            if temptime > 1.4 : rating = 0
+            if 1.3 < temptime <= 1.4: rating = 1
+            if 1.2 < temptime <= 1.3: rating = 2
+            if 1.1 < temptime <= 1.2: rating = 3
+            if 1 < temptime <= 1.1: rating = 4
+            if temptime <= 1: rating = 5
+            self.average_rating = (self.average_rating + rating) / 2
+            print("Average rating = ",self.average_rating)
 
 
