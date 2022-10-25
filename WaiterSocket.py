@@ -9,6 +9,8 @@ import threading
 import requests
 import Tables_List
 
+average_rating = 0
+
 class Waiter(Thread):
     def __init__(self,id):
         Thread.__init__(self)
@@ -37,7 +39,6 @@ class Waiter(Thread):
     orders_done = []
     host = Setings.hostName
     port = Setings.serverPort
-    average_rating = 5
     headers = """\
 POST /order HTTP/1.1\r
 Content-Type: {content_type}\r
@@ -46,6 +47,7 @@ Host: {host}\r
 Connection: close\r
 \r\n"""
     body = {}
+
 
     def setbody(self, order_id, table_id, waiter_id, items, priority, max_wait):
         self.body = {
@@ -115,7 +117,8 @@ Connection: close\r
             if 1.1 < temptime <= 1.2: rating = 3
             if 1 < temptime <= 1.1: rating = 4
             if temptime <= 1: rating = 5
-            self.average_rating = (self.average_rating + rating) / 2
-            print("Average rating = ",self.average_rating)
+            global average_rating
+            average_rating = (average_rating + rating)
+            print("Average rating = ",average_rating / serving['order_id'])
 
 

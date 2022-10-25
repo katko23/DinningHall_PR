@@ -3,6 +3,8 @@ import json
 import socket,Setings
 import threading
 from threading import Thread
+
+import requests
 from flask import Flask, render_template, request, url_for, jsonify
 
 
@@ -22,10 +24,30 @@ class Server(Thread):
             input_json = request.get_json(force=True)
             # force=True, above, is necessary if another developer
             # forgot to set the MIME type to 'application/json'
-            print('data from client:', input_json)
-            temp = json.loads(input_json)
-            waiters[int(temp['waiter_id']) - 1].orders_done.append(temp)
+            temp = input_json.copy()
+            if 'restaurant_id' in temp:
+                print("Client Order Done", input_json);
+            else:
+                print('data from client:', input_json)
+                waiters[int(temp['waiter_id']) - 1].orders_done.append(temp)
             dictToReturn = {'answer': "Dinning Hall received"}
+            return jsonify(dictToReturn)
+
+        @app.route('/v1/order', methods=['POST'])
+        def ordering():
+            input_json = request.get_json(force=True)
+            # force=True, above, is necessary if another developer
+            # forgot to set the MIME type to 'application/json'
+            print('data from client:', input_json)
+            dictToSend = input_json.copy()
+            dictToSend['pick_up_time'] = dictToSend['created_time']
+            dictToSend.pop('created_time')
+            res = requests.post("http://" + str(Setings.hostName) + ":" + str(Setings.serverPort) + "/order", json=dictToSend)
+            print('response from Kitchen:', res.text)
+            dictFromKitchen = res.json()
+            dictToReturn = input_json.copy()
+            dictToReturn['restaurant_id'] = Setings.restaurant_id
+
             return jsonify(dictToReturn)
 
         app.run(host=hostName, port=serverPort, debug=False)

@@ -1,5 +1,5 @@
 # Python 3 server example
-import SocketServer,Tables_List,Order,Waiter_Walk
+import SocketServer,Tables_List,Order,Waiter_Walk,Registration
 from threading import Thread
 
 if __name__ == "__main__":
@@ -15,6 +15,14 @@ if __name__ == "__main__":
     thread_waiters = Thread(target=Waiter_Walk.waiters_walking_func())
 
     thread_waiters.start()
+
+    has_regist = False
+    while has_regist == False:
+        import time
+        time.sleep(10)
+        if ( Registration.register() ):
+            has_regist = True
+            print("has regist")
 
 
 
