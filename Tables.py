@@ -54,8 +54,9 @@ class TableClass(Thread):
         #print("nr of items:" + str(self.nr_of_items))
         #print("priority:" + str(self.priority))
         self.items.clear()
+        import Plates
         for i in range(self.nr_of_items):
-            foodid = random.randint(1,13)
+            foodid = random.randint(1, len(Plates.plates) - 1)
             self.items.append(foodid)
         self.tclock.acquire()
         self.ocupped[self.id - 1] = True
