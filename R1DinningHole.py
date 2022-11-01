@@ -19,7 +19,7 @@ if __name__ == "__main__":
     has_regist = False
     while has_regist == False:
         import time
-        time.sleep(10)
+        # time.sleep(10)
         if ( Registration.register() ):
             has_regist = True
             print("has regist")
