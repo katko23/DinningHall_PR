@@ -1,9 +1,10 @@
 # Python 3 server example
 import json
 import socket,Setings
-import threading
+import math
+import time
 from threading import Thread
-
+import Food_Ordering_Plates as FOS
 import requests
 from flask import Flask, render_template, request, url_for, jsonify
 
@@ -27,6 +28,7 @@ class Server(Thread):
             temp = input_json.copy()
             if 'restaurant_id' in temp:
                 print("Client Order Done", input_json);
+                FOS.order_append(input_json)
             else:
                 print('data from client:', input_json)
                 waiters[int(temp['waiter_id']) - 1].orders_done.append(temp)
@@ -42,13 +44,60 @@ class Server(Thread):
             dictToSend = input_json.copy()
             dictToSend['pick_up_time'] = dictToSend['created_time']
             dictToSend.pop('created_time')
+            dictToSend['order_id'] = FOS.orders_id
+            dictToSend['registered_time'] = time.time()
             res = requests.post("http://" + str(Setings.hostName) + ":" + str(Setings.serverPort) + "/order", json=dictToSend)
             print('response from Kitchen:', res.text)
-            dictFromKitchen = res.json()
+            dictres = res.json()  #dictionary from Kitchen as response
+            input_json['estimated_waiting_time'] = math.ceil(Setings.wt * (dictres["Plates_on_prepairing"] + len(input_json['items'])) / len(input_json['items']))
             dictToReturn = input_json.copy()
+            input_json['restaurant_id'] = Setings.restaurant_id
+            input_json['is_ready'] = False
+            dictToReturn['created_time'] = dictToSend['pick_up_time']
             dictToReturn['restaurant_id'] = Setings.restaurant_id
+            dictToReturn['restaurant_address'] = Setings.serverName + ":" + str(Setings.this_serverPort)
+            FOS.orders_lock.acquire()
+            FOS.orders_id = FOS.orders_id + 1
+            dictToReturn['order_id'] = FOS.orders_id
+            input_json['order_id'] = FOS.orders_id
+            input_json["prepared_time"] = 0
+            input_json["cooking_time"] = 0
+            input_json["cooking_details"] = None
+            dictToReturn['registered_time'] = dictToSend['registered_time']
+            input_json['registered_time'] = dictToReturn['registered_time']
+            FOS.received_orders.append(input_json)
+            FOS.orders_lock.release()
 
+            dictToReturn.pop('items')
+            dictToReturn.pop('priority')
+            dictToReturn.pop('max_wait')
             return jsonify(dictToReturn)
+
+        @app.route('/v1/order/<int:Number>', methods=['GET'])
+        def check(Number):
+            print(Number)
+            dictToReturn = {}
+            for o in FOS.orders:
+                if o['order_id'] == Number:
+                    dictToReturn["order_id"] = o['order_id']
+                    dictToReturn["is_ready"] = True
+                    dictToReturn["estimated_waiting_time"] = 0
+                    dictToReturn["priority"] = o['priority']
+                    dictToReturn["max_wait"] = o['max_wait']
+                    dictToReturn["created_time"] = o['pick_up_time']
+                    dictToReturn["registered_time"] = o['registered_time']
+                    dictToReturn["prepared_time"] = o['registered_time'] + o['cooking_time']
+                    dictToReturn['cooking_time'] = o['cooking_time']
+                    dictToReturn["cooking_details"] = o['cooking_details']
+                    return jsonify(dictToReturn)
+            dictToReturn["order_id"] = Number
+            dictToReturn["is_ready"] = False
+            dictToReturn["priority"] = 3
+            dictToReturn["prepared_time"] = 0
+            dictToReturn['cooking_time'] = 0
+            dictToReturn["cooking_details"] = None
+            return jsonify(dictToReturn)
+
 
         app.run(host=hostName, port=serverPort, debug=False)
 
